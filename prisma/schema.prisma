@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  subheading String?
+  content   String
+  quote     String?
+  tags      String[]
+  slug      String @unique
+  userId    String   // Change type from Int to String
+  published Boolean  @default(false)
+  date      DateTime @default(now())
+  image     String @default("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D")
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model User {
+    id             String   @id @default(cuid())
+    firstName      String
+    lastName       String
+    email          String   @unique
+    hashedPassword String
+    sessions       Session[]
+    posts          Post[]
+}
+
+model Session {
+    id        String   @id
+    userId    String
+    expiresAt DateTime
+    user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
