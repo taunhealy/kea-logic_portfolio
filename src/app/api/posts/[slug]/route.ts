@@ -26,3 +26,30 @@ export async function DELETE(
     );
   }
 }
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { slug: string } },
+) {
+  const { slug } = params;
+  const body = await request.json();
+
+  try {
+    const updatedPost = await prisma.post.update({
+      where: { slug },
+      data: {
+        title: body.title,
+        subheading: body.subheading || "",
+        content: body.content,
+      },
+    });
+
+    return NextResponse.json(updatedPost, { status: 200 });
+  } catch (error) {
+    console.error("Error updating post:", error);
+    return NextResponse.json(
+      { message: "Error updating post" },
+      { status: 500 },
+    );
+  }
+}
