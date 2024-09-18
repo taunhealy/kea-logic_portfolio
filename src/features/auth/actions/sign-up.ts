@@ -6,6 +6,18 @@ import { redirect } from "next/navigation";
 import { Argon2id } from "oslo/password";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+const signUpSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 const signUp = async (formData: FormData) => {
   const formDataRaw = {
@@ -16,11 +28,9 @@ const signUp = async (formData: FormData) => {
     confirmPassword: formData.get("confirmPassword") as string,
   };
 
-  if (formDataRaw.password !== formDataRaw.confirmPassword) {
-    throw new Error("Passwords do not match");
-  }
-
   try {
+    signUpSchema.parse(formDataRaw);
+
     console.log("Hashing password...");
     const argon2 = new Argon2id();
     const hashedPassword = await argon2.hash(formDataRaw.password); // Hash password (salt is generated internally)
@@ -49,14 +59,14 @@ const signUp = async (formData: FormData) => {
       sessionCookie.value,
       sessionCookie.attributes,
     );
+
+    console.log("Redirecting to /dashboard");
+    redirect("/dashboard");
   } catch (error) {
     console.error("Error during sign-up:", error);
     // TODO: add error feedback yourself
     // https://www.robinwieruch.de/next-forms/
   }
-
-  console.log("Redirecting to /dashboard");
-  redirect("/dashboard");
 };
 
 export { signUp };

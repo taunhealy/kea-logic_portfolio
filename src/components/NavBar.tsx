@@ -1,37 +1,27 @@
-"use client";
-
 import Link from "next/link";
 import React from "react";
-import { useDispatch } from "react-redux";
-import { signOutUser } from "@/features/auth/actions/authActions";
-interface NavBarProps {
-  user: any;
-}
+import SignOutButton from "@/features/auth/components/sign-out-button";
 
-const NavBar: React.FC<NavBarProps> = ({ user }) => {
-  const dispatch = useDispatch();
-
-  const handleSignOut = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // @ts-ignore
-    dispatch(signOutUser()); // Dispatch the sign-out action
-  };
-
+const NavBar: React.FC<{ user: any }> = ({ user }) => {
+  // Specify the type for user
   return (
-    <div
+    <nav
+      aria-label="Main Navigation"
       className="flex h-20 w-screen items-center justify-between px-[20px] md:px-[70px]"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
     >
-      <nav className="flex items-center gap-6">
-        <Link href="/">Home</Link>
-        <Link href="/posts">Posts</Link>
-      </nav>
+      <ul className="flex items-center gap-6">
+        <li>
+          <Link href="/">Home</Link>
+        </li>
+        <li>
+          <Link href="/admin/posts">Posts</Link>
+        </li>
+      </ul>
       <ul className="flex items-center gap-x-4">
         {user ? (
           <li>
-            <form onSubmit={handleSignOut}>
-              <button type="submit">Sign Out</button>
-            </form>
+            <SignOutButton />
           </li>
         ) : (
           <>
@@ -47,7 +37,7 @@ const NavBar: React.FC<NavBarProps> = ({ user }) => {
           </>
         )}
       </ul>
-    </div>
+    </nav>
   );
 };
 

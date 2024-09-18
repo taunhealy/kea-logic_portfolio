@@ -10,7 +10,7 @@ const postSchema = z.object({
   subheading: z.string().optional(),
   content: z.string().min(1, "Content is required"),
   quote: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(), // Updated to expect an array of strings
 });
 
 export async function createPost(formData: FormData) {
@@ -25,17 +25,16 @@ export async function createPost(formData: FormData) {
     subheading: formData.get("subheading") as string,
     content: formData.get("content") as string,
     quote: formData.get("quote") as string,
-    tags: formData.getAll("tags") as string[],
+    tags: (formData.get("tags") as string)
+      .split(",")
+      .map(tag => tag.trim()), // This creates an array of strings
   };
 
   try {
-    // Validate post data
+    console.log("Post data before parsing:", postData); // Debugging line
     postSchema.parse(postData);
 
-    // Generate a slug
     let slug = postData.title.toLowerCase().replace(/\s+/g, "-");
-
-    // Check for existing slug and modify if necessary
     let existingPost = await prisma.post.findUnique({ where: { slug } });
     let counter = 1;
 
@@ -45,16 +44,14 @@ export async function createPost(formData: FormData) {
       counter++;
     }
 
-    // Create post in the database
     await prisma.post.create({
       data: {
         ...postData,
-        user: { connect: { id: user.id as string } },
+        user: { connect: { id: user.id } },
         slug,
       },
     });
 
-    // Revalidate the posts page
     revalidatePath("/posts");
 
     return { success: true, slug };

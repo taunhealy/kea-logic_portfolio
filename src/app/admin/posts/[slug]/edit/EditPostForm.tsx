@@ -17,6 +17,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+interface Post {
+  title: string;
+  subheading?: string;
+  content: string;
+  slug: string;
+  post: Post;
+}
+
 const formSchema = z.object({
   title: z.string().min(1, {
     message: "Title must be at least 1 character.",
@@ -27,6 +35,7 @@ const formSchema = z.object({
   }),
 });
 
+// @ts-ignore
 const EditPostForm = ({ post }) => {
   const router = useRouter();
 
@@ -73,9 +82,7 @@ const EditPostForm = ({ post }) => {
               <FormControl>
                 <Input placeholder="Post title" {...field} />
               </FormControl>
-              <FormDescription>
-                Enter the title of your post.
-              </FormDescription>
+              <FormDescription>Enter the title of your post.</FormDescription>
               <FormMessage />
             </FormItem>
           )}

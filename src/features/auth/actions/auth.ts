@@ -1,20 +1,20 @@
 "use server"
 
-import { getSession } from "@/lib/auth" // Adjust based on your auth setup
-import { client } from "@/lib/prisma"
+import { getAuth } from "@/features/auth/queries/get-auth"
+import { prisma } from "@/lib/prisma"
 
 export const getAuthenticatedUser = async () => {
   try {
-    const session = await getSession()
+    const { user, session } = await getAuth()
     if (!session) return { status: 401 }
 
-    const user = await client.user.findUnique({
-      where: { id: session.userId },
-      select: { id: true, name: true, email: true },
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true, firstName: true, lastName: true, email: true },
     })
 
-    if (user) {
-      return { status: 200, user }
+    if (dbUser) {
+      return { status: 200, user: dbUser }
     }
 
     return { status: 404 }

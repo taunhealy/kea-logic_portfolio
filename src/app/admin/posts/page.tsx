@@ -1,7 +1,7 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import DeleteButton from "@/components/DeleteButton";
+import DeleteButton from "@/components/ui/DeleteButton";
 
 const PostsPage = async () => {
   const posts = await prisma.post.findMany();
@@ -33,11 +33,11 @@ const PostsPage = async () => {
                   {post.title}
                 </Link>
               </td>
-              <td className="border px-4 py-2">{post.subheading}</td>
-              <td className="flex items-center border px-4 py-2">
+              <td className="">{post.subheading}</td>
+              <td className="flex items-center gap-5 border px-4 py-2">
                 <Link
                   href={`/posts/${post.slug}/edit`}
-                  className="text-green-600 hover:underline"
+                  className="border px-4 py-2 text-black hover:underline" // Added margin-right for spacing
                 >
                   Edit
                 </Link>

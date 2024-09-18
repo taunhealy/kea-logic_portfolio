@@ -1,20 +1,77 @@
-import signIn from "./sign-in";
-import { setUser, clearUser, setLoading, setError } from "@/redux/authSlice";
+import { useState } from "react";
 
-export const signInUser = (formData: FormData) => async (dispatch: any) => {
-  dispatch(setLoading());
-  const result = await signIn(formData);
+const useSignInUser = () => {
+  const [error, setError] = useState<string | null>(null);
 
-  if (result.success && "user" in result) {
-    // Type guard to check for user
-    dispatch(setUser(result.user));
-  } else {
-    // @ts-ignore
-    dispatch(setError(result.error));
-  }
+  const signInUser = async (formData: FormData) => {
+    try {
+      const response = await fetch("/api/auth/signin", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "An unknown error occurred");
+      }
+
+      // Handle successful sign-in (e.g., update state, redirect)
+    } catch (err) {
+      // @ts-ignore
+      setError(err.message);
+    }
+  };
+
+  return { signInUser, error };
 };
 
-export const signOutUser = () => async (dispatch: any) => {
-  dispatch(clearUser());
-  // Call your sign-out server action here if needed
+const useSignOutUser = () => {
+  const [error, setError] = useState<string | null>(null);
+
+  const signOutUser = async () => {
+    try {
+      const response = await fetch("/api/auth/signout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to sign out");
+      }
+
+      // Handle successful sign-out (e.g., update state, redirect)
+      window.location.href = "/sign-in";
+    } catch (err) {
+      // @ts-ignore
+      setError(err.message);
+    }
+  };
+
+  return { signOutUser, error };
+};
+
+// Ensure this function is defined and exported
+export const signInUser = async (formData: FormData) => {
+  try {
+    const response = await fetch("/api/auth/signin", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "An unknown error occurred");
+    }
+
+    // Handle successful sign-in (e.g., update state, redirect)
+  } catch (err) {
+    // @ts-ignore
+    throw new Error(err.message);
+  }
 };

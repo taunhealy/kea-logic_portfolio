@@ -9,8 +9,6 @@ const signIn = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
-  console.log("Received form data:", { email, password: "***" });
-
   if (!email || !password) {
     return { success: false, error: "Email and password are required" };
   }
@@ -18,32 +16,16 @@ const signIn = async (formData: FormData) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      console.error("User not found");
-      return { success: false, error: "Incorrect email or password" };
-    }
-
-    const validPassword = await new Argon2id().verify(
-      user.hashedPassword,
-      password,
-    );
-
-    if (!validPassword) {
-      console.error("Invalid password");
+    if (!user || !(await new Argon2id().verify(user.hashedPassword, password))) {
       return { success: false, error: "Incorrect email or password" };
     }
 
     const session = await lucia.createSession(user.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
 
-    cookies().set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
-    );
+    cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
 
-    console.log("Sign-in successful");
-    return { success: true };
+    return { success: true, user };
   } catch (error) {
     console.error("Error during sign-in:", error);
     return { success: false, error: "An unexpected error occurred" };
