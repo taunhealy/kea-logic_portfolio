@@ -1,52 +1,37 @@
-import { Inter } from "next/font/google";
+import { cn } from "@/lib/utils";
 import "./globals.css";
-import { AuthProvider } from "@/features/auth/AuthProvider";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import Providers from "@/context/Providers";
 import NavBar from "@/components/NavBar";
+import Toaster from "@/components/ui/toaster";
 import Footer from "@/components/Footer";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-import { getAuth } from "@/features/auth/queries/get-auth";
+import { useAuth } from "@/context/AuthContext"; // Import the useAuth hook
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Your App Name",
   description: "Your app description",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await getAuth();
+  const { user } = useAuth(); // Use the useAuth hook to get the user
 
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <AuthProvider>
-          <ClientLayout user={user}>{children}</ClientLayout>
-        </AuthProvider>
+      <body className={cn(inter.className, "min-h-screen pt-16 antialiased")}>
+        <Providers>
+          <NavBar />
+          <main className="container mx-auto px-4 py-8">{children}</main>
+          <Footer />
+          <Toaster />
+        </Providers>
       </body>
     </html>
-  );
-}
-
-function ClientLayout({
-  children,
-  user,
-}: {
-  children: React.ReactNode;
-  user: any;
-}) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <NavBar user={user} />
-      <hr />
-      <main className="p-4">{children}</main>
-      <Footer />
-    </QueryClientProvider>
   );
 }

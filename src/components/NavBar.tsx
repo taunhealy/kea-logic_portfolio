@@ -1,9 +1,19 @@
 import Link from "next/link";
 import React from "react";
 import SignOutButton from "@/features/auth/components/sign-out-button";
+import { useAuth } from "@/context/AuthContext"; // Import the useAuth hook
 
-const NavBar: React.FC<{ user: any }> = ({ user }) => {
-  // Specify the type for user
+interface NavBarProps {
+  user: any; // Adjust the type as needed
+}
+
+const NavBar: React.FC = () => {
+  const { user, loading } = useAuth(); // Use the useAuth hook to get the user and loading state
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <nav
       aria-label="Main Navigation"
